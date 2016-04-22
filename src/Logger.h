@@ -22,6 +22,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/date_time/posix_time/posix_time_types.hpp>
 #include <boost/thread/condition_variable.hpp>
+ #include <boost/filesystem.hpp>
 
 #include "OpenNI/openni_device.h"
 #include "OpenNI/openni_driver.h"

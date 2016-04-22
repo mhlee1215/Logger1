@@ -216,7 +216,12 @@ void Logger::toggleCalib()
 void Logger::capture()
 {  
 
-    printf("do capture!\n");
+    //printf("do capture!\n");
+    //mkdir("./captures");
+    const char dir_path[] = "./captures";
+    boost::filesystem::path dir(dir_path);
+    boost::filesystem::create_directories(dir);
+
     int lastDepth = latestDepthIndex.getValue();
 
     if(lastDepth == -1)
