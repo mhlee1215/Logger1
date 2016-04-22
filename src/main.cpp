@@ -14,6 +14,7 @@ int main(int argc, char **argv)
 MainWindow::MainWindow(Logger * logger)
  : logger(logger),
    depthImage(640, 480, QImage::Format_RGB888),
+   //depthImageRaw(640, 480, QImage::Format_RGB888),
    rgbImage(640, 480, QImage::Format_RGB888),
    recording(false),
    lastDrawn(-1)
@@ -32,6 +33,10 @@ MainWindow::MainWindow(Logger * logger)
     depthLabel = new QLabel(this);
     depthLabel->setPixmap(QPixmap::fromImage(depthImage));
     mainLayout->addWidget(depthLabel);
+
+    // depthLabelRaw = new QLabel(this);
+    // depthLabelRaw->setPixmap(QPixmap::fromImage(depthImageRaw));
+    // mainLayout->addWidget(depthLabelRaw);
 
     imageLabel = new QLabel(this);
     imageLabel->setPixmap(QPixmap::fromImage(rgbImage));
@@ -60,9 +65,18 @@ MainWindow::MainWindow(Logger * logger)
 
     wrapperLayout->addLayout(buttonLayout);
 
+
     startStop = new QPushButton("Record", this);
     connect(startStop, SIGNAL(clicked()), this, SLOT(recordToggle()));
     buttonLayout->addWidget(startStop);
+
+    QPushButton * captureButton = new QPushButton("Capture", this);
+    connect(captureButton, SIGNAL(clicked()), this, SLOT(capture()));
+    buttonLayout->addWidget(captureButton);
+
+    QPushButton * calibButton = new QPushButton("Toggle Calib", this);
+    connect(calibButton, SIGNAL(clicked()), this, SLOT(calibToggle()));
+    buttonLayout->addWidget(calibButton);
 
     QPushButton * quitButton = new QPushButton("Quit", this);
     connect(quitButton, SIGNAL(clicked()), this, SLOT(quit()));
@@ -71,12 +85,16 @@ MainWindow::MainWindow(Logger * logger)
     setLayout(wrapperLayout);
 
     startStop->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    captureButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    calibButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     quitButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     QFont currentFont = startStop->font();
     currentFont.setPointSize(currentFont.pointSize() + 8);
 
     startStop->setFont(currentFont);
+    captureButton->setFont(currentFont);
+    calibButton->setFont(currentFont);
     quitButton->setFont(currentFont);
 
     painter = new QPainter(&depthImage);
@@ -98,7 +116,7 @@ MainWindow::MainWindow(Logger * logger)
     logFolder.append("\\");
 #endif
 
-    logFolder.append("Kinect_Logs");
+    logFolder.append("Kinect_Logs_test");
 
     boost::filesystem::path p(logFolder.c_str());
     boost::filesystem::create_directory(p);
@@ -218,6 +236,11 @@ void MainWindow::recordToggle()
     }
 }
 
+void MainWindow::calibToggle()
+{
+    logger->toggleCalib();
+}
+
 void MainWindow::quit()
 {
     if(QMessageBox::question(this, "Quit?", "Are you sure you want to quit?", "&No", "&Yes", QString::null, 0, 1 ))
@@ -228,6 +251,19 @@ void MainWindow::quit()
         }
         this->close();
     }
+}
+
+void MainWindow::capture()
+{
+    logger->capture();
+    // if(QMessageBox::question(this, "Quit?", "Are you sure you want to quit?", "&No", "&Yes", QString::null, 0, 1 ))
+    // {
+    //     if(recording)
+    //     {
+    //         recordToggle();
+    //     }
+    //     this->close();
+    // }
 }
 
 void MainWindow::timerCallback()
@@ -252,6 +288,7 @@ void MainWindow::timerCallback()
     }
 
     memcpy(&depthBuffer[0], logger->frameBuffers[bufferIndex].first.first, 640 * 480 * 2);
+    // memcpy(&depthBufferRaw[0], logger->frameBuffersRaw[bufferIndex].first.first, 640 * 480 * 2);
     memcpy(rgbImage.bits(), logger->frameBuffers[bufferIndex].first.second, 640 * 480 * 3);
 
     cv::Mat1w depth(480, 640, (unsigned short *)&depthBuffer[0]);
@@ -259,6 +296,14 @@ void MainWindow::timerCallback()
 
     cv::Mat3b depthImg(480, 640, (cv::Vec<unsigned char, 3> *)depthImage.bits());
     cv::cvtColor(tmp, depthImg, CV_GRAY2RGB);
+
+
+    // cv::Mat1w depthRaw(480, 640, (unsigned short *)&depthBufferRaw[0]);
+    // normalize(depthRaw, tmp, 0, 255, cv::NORM_MINMAX, 0);
+
+    // cv::Mat3b depthImgRaw(480, 640, (cv::Vec<unsigned char, 3> *)depthImageRaw.bits());
+    // cv::cvtColor(tmp, depthImgRaw, CV_GRAY2RGB);
+
 
     painter->setPen(recording ? Qt::red : Qt::green);
     painter->setFont(QFont("Arial", 30));
@@ -295,5 +340,6 @@ void MainWindow::timerCallback()
     painter->drawText(10, 455, QString::fromStdString(str.str()));
 
     depthLabel->setPixmap(QPixmap::fromImage(depthImage));
+    // depthLabelRaw->setPixmap(QPixmap::fromImage(depthImageRaw));
     imageLabel->setPixmap(QPixmap::fromImage(rgbImage));
 }

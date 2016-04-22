@@ -34,10 +34,10 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *
  */
-#include <openni_camera/openni_driver.h>
-#include <openni_camera/openni_device.h>
-#include <openni_camera/openni_image.h>
-#include <openni_camera/openni_depth_image.h>
+#include "openni_driver.h"
+#include "openni_device.h"
+#include "openni_image.h"
+#include "openni_depth_image.h"
 #include <iostream>
 #include <string>
 #include <map>

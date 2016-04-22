@@ -55,12 +55,15 @@ class MainWindow : public QWidget
         void timerCallback();
         void recordToggle();
         void quit();
+        void capture();
+        void calibToggle();
         void fileBrowse();
         void dateFilename();
 
     private:
         Logger * logger;
         QImage depthImage;
+        // QImage depthImageRaw;
         QImage rgbImage;
         bool recording;
         QPushButton * startStop;
@@ -68,7 +71,9 @@ class MainWindow : public QWidget
         QPushButton * dateNameButton;
         QLabel * logFile;
         unsigned short depthBuffer[640 * 480 * 2];
+        unsigned short depthBufferRaw[640 * 480 * 2];
         QLabel * depthLabel;
+        // QLabel * depthLabelRaw;
         QLabel * imageLabel;
         QTimer * timer;
         cv::Mat1b tmp;
